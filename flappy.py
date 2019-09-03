@@ -16,8 +16,10 @@ class Screen(object):
     self.s.low_light = True
     self.width = width
     self.height = height
-    self.buffer = [(0,0,255) if pixel < self.width * self.height /2 else (0,0,0) for pixel in range(self.width * self.height)]
+    self.buffer = [BLUE if pixel < self.width * self.height /2 else GREEN for pixel in range(self.width * self.height)]
+    self.buffer_original = list(self.buffer)
     self.score = 0
+    self.button_presses = {}
     
   def colour_pixel(self, x, y, colour):
     try:
@@ -29,7 +31,11 @@ class Screen(object):
     self.s.set_pixels(self.buffer)
     
   def reset_buffer(self):
-    self.buffer = [(0,0,255) if pixel < self.width * self.height /2 else (0,255,0) for pixel in range(self.width * self.height)]
+    self.buffer = list(self.buffer_original)
+    
+  def get_button_presses(self):
+    button_presses_now = {event.direction : event.action for event in self.s.stick.get_events()}
+    self.button_presses.update(button_presses_now)
 
 
 
@@ -63,8 +69,10 @@ class Sprite(object):
 
 class Bird(Sprite):
   def update(self):
-    if self.position[1] < 7:
-       self.position[1] += 1
+    if self.screen.button_presses.get("up") == "pressed" or self.screen.button_presses.get("up") == "held" and self.position[1] > 0:
+      self.position[1] -= 1
+    elif self.position[1] < 7:
+      self.position[1] += 1
   
 
 class Cloud(Sprite):
@@ -90,23 +98,31 @@ class Pipe(Sprite):
         self.position[1] = 8 - new_height
       self.draw_sprite(custom_size=[1, 6 - self.height], custom_position=[self.position[0],0])  
 
+
+def check_if_lossed(bird, pipe):
+   if bird.height < pipe.height:
+     print('lossed as bird is {} and pipe is {}'.format(bird.height, pipe.height))
+
 def main():
    the_screen = Screen()
    bird = Bird(the_screen)
    cloud = Cloud(the_screen, colour=WHITE, width=2, height=1, position=[2,1])
-   pipe_lower = Pipe(the_screen,  colour=RED,   width=1,  height=2, position=[7,6])
-   sprites = [bird, cloud, pipe_lower, bird, ]
-   speed = 0.1
-   while True: 
+   pipe = Pipe(the_screen,  colour=RED,   width=1,  height=2, position=[7,6])
+   sprites = [cloud, pipe, bird ]
+   speed = 0.2
+   game = True
+   while game: 
+       the_screen.get_button_presses()
        for sprite in sprites:
          sprite.update()
          sprite.draw_sprite()
        the_screen.draw_frame()
+       if pipe.position[0] == bird.position[0]:
+         check_if_lossed(bird,pipe) 
+         
        the_screen.reset_buffer()
        time.sleep(speed)
 
 
 if __name__ == "__main__":
   main()
-       
-       
