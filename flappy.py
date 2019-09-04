@@ -9,6 +9,7 @@ RED = (255, 0, 0)
 WHITE = (255,255,255)
 NOTHING = (0,0,0)
 PINK = (255,105, 180)
+PURPLE = (128, 0, 128)
 
 class Screen(object):
   def __init__(self, width=8, height=8):
@@ -20,19 +21,19 @@ class Screen(object):
     self.buffer_original = list(self.buffer)
     self.score = 0
     self.button_presses = {}
-    
+
   def colour_pixel(self, x, y, colour):
     try:
        self.buffer[ y * self.width + x ] = colour
     except:
        pass
-    
+
   def draw_frame(self):
     self.s.set_pixels(self.buffer)
-    
+
   def reset_buffer(self):
     self.buffer = list(self.buffer_original)
-    
+
   def get_button_presses(self):
     button_presses_now = {event.direction : event.action for event in self.s.stick.get_events()}
     self.button_presses.update(button_presses_now)
@@ -46,13 +47,13 @@ class Sprite(object):
     self.colour = colour
     self.height = height
     self.width =  width
-    
+
   def draw_sprite(self, custom_size=None, custom_position=None):
     if custom_size is not None:
        width,height = custom_size
     else:
        width,height = self.width, self.height
-    
+
     if custom_position is not None:
        position = custom_position
     else:
@@ -62,7 +63,7 @@ class Sprite(object):
           x = position[0] + i
           y = position[1] + j
           self.screen.colour_pixel(x, y, self.colour)
-          
+
   def update(self):
     pass
 
@@ -73,7 +74,15 @@ class Bird(Sprite):
       self.position[1] -= 1
     elif self.position[1] < 7:
       self.position[1] += 1
-  
+
+class Bullet(Sprite):
+  def update(self):
+    print("Bullet.update")
+    if self.screen.button_presses.get("left") == "pressed" or self.screen.button_presses.get("left") == "held" and self.position[1] > 0:
+      self.position[1] -= 1
+    elif self.position[1] < 7:
+      self.position[1] += 1
+
 
 class Cloud(Sprite):
    def update(self):
@@ -83,7 +92,7 @@ class Cloud(Sprite):
       else:
         self.position[0] = 7 - overflow
         self.position[1] = choice([_ for _ in range(4)])
-        
+
 
 class Pipe(Sprite):
   def update(self):
@@ -95,7 +104,7 @@ class Pipe(Sprite):
         new_height = choice([_ for _ in range(7)])
         self.height = new_height
         self.position[1] = 8 - new_height
-      self.draw_sprite(custom_size=[1, 6 - self.height], custom_position=[self.position[0],0])  
+      self.draw_sprite(custom_size=[1, 6 - self.height], custom_position=[self.position[0],0])
 
 
 def check_if_lossed(bird, pipe):
@@ -110,14 +119,21 @@ def main():
    bird = Bird(the_screen)
    cloud = Cloud(the_screen, colour=WHITE, width=2, height=1, position=[2,1])
    pipe = Pipe(the_screen,  colour=RED,   width=1,  height=2, position=[7,6])
-   sprites = [cloud, pipe, bird ]
+   bullet = Bullet(the_screen, colour=PURPLE, width=1, height=1, position=[bird.position[0] + 1, bird.position[1]])
+   sprites = [cloud, pipe, bird, bullet]
    speed = 0.2
    game = True
-   while game: 
+   while game:
        the_screen.get_button_presses()
        for sprite in sprites:
          sprite.update()
-         sprite.draw_sprite()
+         if isinstance(sprite, Bullet):
+           print("Bullet Draw!")
+           sprite.colour = PURPLE
+           sprite.draw_sprite(custom_position=[bird.position[0] + 1, bird.position[1]])
+         else:
+           sprite.draw_sprite()
+
        the_screen.draw_frame()
        if pipe.position[0] == bird.position[0]:
            if check_if_lossed(bird,pipe):
