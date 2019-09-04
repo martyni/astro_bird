@@ -17,7 +17,7 @@ class Screen(object):
     self.s.low_light = True
     self.width = width
     self.height = height
-    self.buffer = [WHITE if pixel < self.width * self.height /2 else WHITE for pixel in range(self.width * self.height)]
+    self.buffer = [YELLOW if pixel < self.width * self.height /2 else YELLOW for pixel in range(self.width * self.height)]
     self.buffer_original = list(self.buffer)
     self.score = 0
     self.button_presses = {}
@@ -71,9 +71,14 @@ class Sprite(object):
 class Bird(Sprite):
   direction = 1
   
+  # def get_direction(self)
+  
   def update(self):
     if self.screen.button_presses.get("up") == "pressed" or self.screen.button_presses.get("up") == "held":
-      self.direction *= -1
+      self.direction = 1
+      
+    if self.screen.button_presses.get("down") == "pressed" or self.screen.button_presses.get("down") == "held":
+      self.direction = -1
       
     self.position[1] += self.direction
     if self.position[1] < 0:
@@ -118,9 +123,9 @@ def check_if_lossed(bird, pipe):
 def main():
    the_screen = Screen()
    bird = Bird(the_screen)
-   cloud = Cloud(the_screen, colour=WHITE, width=2, height=1, position=[2,1])
+  # cloud = Cloud(the_screen, colour=WHITE, width=2, height=1, position=[2,1])
    pipe = Pipe(the_screen,  colour=RED,   width=1,  height=2, position=[7,6])
-   sprites = [cloud, pipe, bird ]
+   sprites = [ pipe, bird ]
    speed = 0
    game = True
    while game: 
