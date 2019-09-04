@@ -102,8 +102,8 @@ def check_if_lossed(bird, pipe):
    acceptable_height = [ pipe.position[1] - _ for _ in range(3)]
    if bird.position[1]  not in acceptable_height:
        print('lossed as bird is {} and acceptable heights are {}'.format(bird.position[1], acceptable_height))
-       return False
-   return True
+       return True
+   return False
 
 def main():
    the_screen = Screen()
@@ -120,7 +120,7 @@ def main():
          sprite.draw_sprite()
        the_screen.draw_frame()
        if pipe.position[0] == bird.position[0]:
-           if not check_if_lossed(bird,pipe):
+           if check_if_lossed(bird,pipe):
                the_screen.s.show_message('{}'.format(the_screen.score))
                the_screen.score = 0
                speed = 0.2
