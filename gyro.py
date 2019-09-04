@@ -69,16 +69,16 @@ class Sprite(object):
 
 
 class Bird(Sprite):
-  direction = 1
+  direction = 0
   
   # def get_direction(self)
   
   def update(self):
     if self.screen.button_presses.get("up") == "pressed" or self.screen.button_presses.get("up") == "held":
-      self.direction = -1
+      self.direction -= -1
       
     if self.screen.button_presses.get("down") == "pressed" or self.screen.button_presses.get("down") == "held":
-      self.direction = 1
+      self.direction += 1
       
     self.position[1] += self.direction
     if self.position[1] < 0:
