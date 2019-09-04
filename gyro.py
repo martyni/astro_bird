@@ -1,5 +1,6 @@
 from sense_hat import SenseHat
 from random import choice
+from math import pow
 import time
 
 GREEN = (0, 255, 0)
@@ -16,7 +17,7 @@ class Screen(object):
     self.s.low_light = True
     self.width = width
     self.height = height
-    self.buffer = [NOTHING if pixel < self.width * self.height /2 else NOTHING for pixel in range(self.width * self.height)]
+    self.buffer = [WHITE if pixel < self.width * self.height /2 else WHITE for pixel in range(self.width * self.height)]
     self.buffer_original = list(self.buffer)
     self.score = 0
     self.button_presses = {}
@@ -40,7 +41,7 @@ class Screen(object):
 
 
 class Sprite(object):
-  def __init__(self,screen, position=[0,4], height=1, width=1, colour=YELLOW):
+  def __init__(self,screen, position=[0,4], height=1, width=1, colour=BLUE):
     self.screen = screen
     self.position = list(position)
     self.colour = colour
@@ -62,47 +63,82 @@ class Sprite(object):
           x = position[0] + i
           y = position[1] + j
           self.screen.colour_pixel(x, y, self.colour)
-    print('drew {}, {}'.format(self.position, self.colour))
           
   def update(self):
     pass
 
 
-class Ball(Sprite):
+class Bird(Sprite):
+  direction = 1
+  
   def update(self):
-    acceleration = self.screen.s.get_accelerometer_raw()
-    x = acceleration['x']
-    y = acceleration['y']
-    z = acceleration['z']
-    x=round(x, 0)
-    y=round(y, 0)
-    z=round(z, 0)
-    self.position[0] += int(x)
-    self.position[1] += int(y)
-    overflow_array = [self.width, self.height]
-    for pos, value in enumerate(self.position):
-        max_value = 8 - overflow_array[pos]
-        if self.position[pos] > max_value:
-            self.position[pos] = max_value
-        if self.position[pos] < 0:
-            self.position[pos] = 0
-
-    print("x={0}, y={1}, z={2}".format(x, y, z))
-    print("x={0}, y={1}, z={2}".format( self.position[0],  self.position[1], z))
+    if self.screen.button_presses.get("up") == "pressed" or self.screen.button_presses.get("up") == "held":
+      self.direction *= -1
+      
+    self.position[1] += self.direction
+    if self.position[1] < 0:
+      self.position[1] = 0
+    if self.position[1] > 7:
+      self.position[1] = 7
   
 
+class Cloud(Sprite):
+   def update(self):
+      overflow = self.width -1
+      if self.position[0] >= 0 + overflow:
+        self.position[0] -= 1
+      else:
+        self.position[0] = 7 - overflow
+        self.position[1] = choice([_ for _ in range(4)])
+        
+
+class Pipe(Sprite):
+  def update(self):
+      overflow = self.width -1
+      if self.position[0] >= 0 + overflow:
+        self.position[0] -= 1
+      else:
+        self.position[0] = 7 - overflow
+        new_height = choice([_ for _ in range(7)])
+        self.height = new_height
+        self.position[1] = 8 - new_height
+      self.draw_sprite(custom_size=[1, 6 - self.height], custom_position=[self.position[0],0])  
+
+# class Tommy(Sprite):
+#   def update(self):
+    
+
+def check_if_lossed(bird, pipe):
+   acceptable_height = [ pipe.position[1] - _ for _ in range(3)]
+   if bird.position[1]  not in acceptable_height:
+       print('lossed as bird is {} and acceptable heights are {}'.format(bird.position[1], acceptable_height))
+       return True
+   return False
 
 def main():
    the_screen = Screen()
-   ball = Ball(the_screen, width=2, height=2,position=[4,4])
-   sprites = [ ball ]
+   bird = Bird(the_screen)
+   cloud = Cloud(the_screen, colour=WHITE, width=2, height=1, position=[2,1])
+   pipe = Pipe(the_screen,  colour=RED,   width=1,  height=2, position=[7,6])
+   sprites = [cloud, pipe, bird ]
    speed = 0
    game = True
    while game: 
+       the_screen.get_button_presses()
        for sprite in sprites:
          sprite.update()
          sprite.draw_sprite()
        the_screen.draw_frame()
+       if pipe.position[0] == bird.position[0]:
+           if check_if_lossed(bird,pipe):
+               the_screen.s.show_message('{}'.format(the_screen.score))
+               the_screen.score = 0
+               speed = 0.2
+               bird.position[1] = 4
+           else:
+               the_screen.score += 1
+               if speed > 0.01:
+                 speed -= 0.01
        the_screen.reset_buffer()
        time.sleep(speed)
 
