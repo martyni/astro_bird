@@ -44,18 +44,18 @@ class Screen(object):
 
     start_y = max(0, y-1)
     end_y = min(7, y+1)
-    print "boundary for cell {x},{y} is x:{sx}-{ex} and y:{sy}-{ey}".format(x=x,y=y,sx=start_x, ex=end_x,ey=end_y,sy=start_y)
+    # print "boundary for cell {x},{y} is x:{sx}-{ex} and y:{sy}-{ey}".format(x=x,y=y,sx=start_x, ex=end_x,ey=end_y,sy=start_y)
 
     for i in range(start_x, end_x +1 ):
       for j in range(start_y, end_y + 1):
         if i == x and j == y:
-            print "skipping a cell because we're on ourself"
+            # print "skipping a cell because we're on ourself"
             continue
-        print "for cell {x},{y} I am checking {i},{j} - it is {val}".format(x=x,y=y,i=i,j=j, val=self.cells[i*8+j])
+        # print "for cell {x},{y} I am checking {i},{j} - it is {val}".format(x=x,y=y,i=i,j=j, val=self.cells[i*8+j])
         neighbours += 1 if self.cells[i*8+j] else 0
 
-    print "cell {X},{Y} has {neighbours} neighbours".format(X=x, Y=y, neighbours=neighbours)
-    print "\n"
+    # print "cell {X},{Y} has {neighbours} neighbours".format(X=x, Y=y, neighbours=neighbours)
+    # print "\n"
     return neighbours
 
   def calculate_next(self):
@@ -77,9 +77,9 @@ class Screen(object):
         self.buffer[x*8+y] = WHITE if self.cells_new[x*8 +y] else NOTHING
 
     self.s.set_pixels(self.buffer)
-    for row in range(8):
-        print map(lambda x: 1 if x else 0, self.cells_new[row*8:row*8+8])
-    print
+    # for row in range(8):
+    #     print map(lambda x: 1 if x else 0, self.cells_new[row*8:row*8+8])
+    # print
 
   def reset_buffer(self):
     self.buffer = list(self.buffer_original)
