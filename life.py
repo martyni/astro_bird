@@ -47,6 +47,8 @@ class Screen(object):
 
     for i in range(start_x, end_x +1 ):
       for j in range(start_y, end_y + 1):
+        if i == x and j == y:
+            continue
         neighbours += 1 if self.cells[i*8+j] else 0
 
     return neighbours
