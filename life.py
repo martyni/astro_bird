@@ -43,7 +43,7 @@ class Screen(object):
     end_x = min(7, x+1)
 
     start_y = max(0, y-1)
-    end_y = min(7, x+1)
+    end_y = min(7, y+1)
     print "boundary for cell {x},{y} is x:{sx}-{ex} and y:{sy}-{ey}".format(x=x,y=y,sx=start_x, ex=end_x,ey=end_y,sy=start_y)
 
     for i in range(start_x, end_x +1 ):
@@ -83,7 +83,7 @@ class Screen(object):
 
   def reset_buffer(self):
     self.buffer = list(self.buffer_original)
-    self.cells = self.cells_new
+    self.cells = list(self.cells_new)
 
   def get_button_presses(self):
     button_presses_now = {event.direction : event.action for event in self.s.stick.get_events()}
